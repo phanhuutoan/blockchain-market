@@ -1,57 +1,115 @@
-import { DataFeedEvent, DatafeedSubscriber } from "./interfaces";
+import {
+  DataFeedEvent,
+  DatafeedSubscriber,
+  SocketErrorHanlder,
+} from "./interfaces";
 
+export enum ContractTypeEnum {
+  BTUSD = "PI_XBTUSD",
+  ETHUSD = "PI_ETHUSD",
+}
 export class Datafeed {
-  private readonly SOCKET_PLAYLOAD = {
-    event: "subscribe",
-    feed: "book_ui_1",
-    product_ids: ["PI_XBTUSD"],
-  };
-  private readonly SOCKET_HOST = 'wss://www.cryptofacilities.com/ws/v1';  
-  private eventList: DataFeedEvent[] = [];
-  private socket =  new WebSocket(this.SOCKET_HOST);
+  currentContract = ContractTypeEnum.BTUSD;
 
-  private subscriberMaps = new Map<number, DatafeedSubscriber>()
+  private readonly SOCKET_PLAYLOAD = (
+    contract: ContractTypeEnum,
+    isSubscribe: boolean
+  ) => ({
+    event: isSubscribe ? "subscribe" : "unsubscribe",
+    feed: "book_ui_1",
+    product_ids: [contract],
+  });
+
+  private readonly SOCKET_HOST = "wss://www.cryptofacilities.com/ws/v1";
+  private readonly SOCKET_HOST_ERR = "wss://www.cryptofacilities.com/error";
+
+  private eventList: DataFeedEvent[] = [];
+  private socket: WebSocket;
+
+  private subscriberMaps = new Map<number, DatafeedSubscriber>();
   private index = 0;
+  private isError = false;
+  private interval: any;
+
+  constructor() {
+    this.socket = new WebSocket(this.SOCKET_HOST);
+  }
 
   initDatafeed() {
     this.socket.onopen = () => {
-      this.socket.send(JSON.stringify(this.SOCKET_PLAYLOAD))
+      this.socketSendData(this.SOCKET_PLAYLOAD(ContractTypeEnum.BTUSD, true));
       this.socket.onmessage = (event) => {
-        this.storeToList(JSON.parse(event.data))
-      }
-    }
-    setInterval(this.triggerSubscribers.bind(this), 1000)
+        const data = JSON.parse(event.data) as DataFeedEvent;
+        if (data.product_id === this.currentContract) {
+          this.storeToList(JSON.parse(event.data));
+          this.index++;
+        }
+      };
+    };
+
+    // update data every 0.8s
+    this.interval = setInterval(this.triggerSubscribers.bind(this), 800);
   }
 
-  subscribe(subscriber: DatafeedSubscriber ) {
+  subscribe(subscriber: DatafeedSubscriber) {
     this.index += 1;
-    this.subscriberMaps.set(this.index, subscriber)
-    return this.index
+    this.subscriberMaps.set(this.index, subscriber);
+    return this.index;
   }
 
   unsubscribe(subscribeId: number) {
-    this.subscriberMaps.delete(subscribeId)
+    this.subscriberMaps.delete(subscribeId);
+  }
+
+  registerSocketErrorHandler(handler: SocketErrorHanlder) {
+    this.socket.addEventListener("error", handler);
+  }
+
+  throwError() {
+    this.closeConnection();
+    this.socket = new WebSocket(
+      this.isError ? this.SOCKET_HOST : this.SOCKET_HOST_ERR
+    );
+    this.initDatafeed();
+    this.isError = !this.isError;
   }
 
   closeConnection() {
-    this.socket.close()
+    clearInterval(this.interval)
+    this.socket.close();
   }
 
   clearList() {
     this.eventList = [];
   }
 
+  switchContract() {
+    // ubsub current contract
+    this.socketSendData(this.SOCKET_PLAYLOAD(this.currentContract, false));
+
+    if (this.currentContract === ContractTypeEnum.BTUSD) {
+      this.currentContract = ContractTypeEnum.ETHUSD;
+      this.socketSendData(this.SOCKET_PLAYLOAD(ContractTypeEnum.ETHUSD, true));
+    } else if (this.currentContract === ContractTypeEnum.ETHUSD) {
+      this.currentContract = ContractTypeEnum.BTUSD;
+      this.socketSendData(this.SOCKET_PLAYLOAD(ContractTypeEnum.BTUSD, true));
+    }
+  }
+
+  private socketSendData(objectData: unknown) {
+    this.socket.send(JSON.stringify(objectData));
+  }
+
   private triggerSubscribers() {
     this.subscriberMaps.forEach((fn) => {
-      fn(this.eventList)
-    })
-    this.clearList()
+      fn(this.eventList);
+    });
+    this.clearList();
   }
 
   private storeToList(event: DataFeedEvent) {
-    this.eventList.push(event)
+    this.eventList.push(event);
   }
 }
-
 
 export const datafeedSingleton = new Datafeed();

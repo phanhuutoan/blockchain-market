@@ -15,3 +15,5 @@ export interface DataFeedEvent {
   }
 
 export type DatafeedSubscriber = (datafeedEvents: DataFeedEvent[]) => void
+
+export type SocketErrorHanlder = (error: Event) => void

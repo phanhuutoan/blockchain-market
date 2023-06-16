@@ -8,6 +8,8 @@ import {
   Td,
 } from "@chakra-ui/react";
 import { uniqueId } from "lodash";
+import { tableStyle } from "./tableStyle";
+import _ from "lodash";
 
 interface OrderTableProps {
   listHeading: string[];
@@ -19,6 +21,7 @@ interface OrderTableProps {
 const OrderTable = (props: OrderTableProps) => {
   const { listHeading, listRows, textAlign = "left", tableType } = props;
   const formater = new Intl.NumberFormat()
+  const maxTotal = (tableType === 'buy' ? _.last(listRows)?.[0] :  _.last(listRows)?.[2]) || 0
 
   function _colorCompute(index: number) {
     const priceColor = tableType === "sell" ? "red.500" : "green.500";
@@ -32,15 +35,16 @@ const OrderTable = (props: OrderTableProps) => {
   function _renderRows() {
     return listRows.map((row) => {
       const rowIndex = listRows.indexOf(row);
+      const percent = (tableType === 'buy' ? row[0] / maxTotal : row[2] / maxTotal) * 100
       return (
-        <Tr key={rowIndex}>
+        <Tr key={rowIndex} sx={tableStyle(tableType, percent).row}>
           {row.map((cell, index) => (
             <Td
               key={`row-${rowIndex}-${uniqueId()}`}
               textAlign={textAlign}
               color={_colorCompute(index)}
               py="6.5px"
-              fontSize={'14px'}
+              fontSize={'16px'}
             >
               {formater.format(cell)}
             </Td>

@@ -1,33 +1,58 @@
-import { Box, Center, Divider, Flex, Select, Text } from "@chakra-ui/react";
+/* eslint-disable react-hooks/exhaustive-deps */
+import {
+  Box,
+  Button,
+  Center,
+  Divider,
+  Flex,
+  Spinner,
+  Text,
+  useToast,
+} from "@chakra-ui/react";
 import { appStyle } from "./styles";
 import OrderTable from "./components/tables/OrderTable";
 import { headingBuy, headingSell } from "./mock/data";
 import { useStoreContext } from "./services";
 import { observer } from "mobx-react-lite";
-import './global.css'
+import "./global.css";
+import { GroupLevel } from "./services/DataStore";
+import { GroupSelect } from "./components/GroupSelect";
+import { SwitchIcon } from "./Icons/icon-svg";
+import { WarningIcon } from "@chakra-ui/icons";
+import { useEffect, useState } from "react";
 
 function App() {
   const dataStore = useStoreContext().dataStore;
+  const toast = useToast()
+  const [isLoading, setIsLoading] = useState(true);
+  
+  function _onSelectGroup(groupLevel: GroupLevel) {
+    dataStore.changeGroupLevel(groupLevel);
+  }
 
-  return (
-    <Center className="App" flexDir={"column"}>
-      <Text mb="2rem" as="h2" fontSize="2rem">
-        The Order book
-      </Text>
-      <Box sx={appStyle.root} id="order-book">
-        <Flex justifyContent={"space-between"} alignItems={"center"}>
-          <Text as="p" color="inherit" fontSize={"1.2rem"}>
-            Order book
-          </Text>
-          <Select w="8rem" defaultValue="0.5">
-            <option value="0.5">Group 0.5</option>
-            <option value="1">Group 1</option>
-            <option value="2.5">Group 2.5</option>
-          </Select>
-        </Flex>
-        <Divider mt="1rem" />
-        {dataStore.orderBuyTableData && dataStore.orderSellTableData ? (
-          <Flex>
+  dataStore.registerSockerErrHanlder((err) => {
+    toast({
+      title: 'An error cause.',
+      description: "Please re-check your websocket",
+      status: 'error',
+      duration: 5000,
+      isClosable: true,
+    })
+  })
+
+  
+  useEffect(() => {
+    let renderCheck = false;
+    if(dataStore.orderBuyTableData.length > 0 && !renderCheck) {
+      setIsLoading(false)
+      renderCheck = true;
+    }
+  }, [dataStore.orderBuyTableData])
+
+  function _renderOrderBookTable() {
+    if (!isLoading) {
+      return (
+        <Flex>
             <Box w="100%">
               <OrderTable
                 listHeading={headingBuy}
@@ -45,12 +70,49 @@ function App() {
               />
             </Box>
           </Flex>
-        ) : (
-          <Text m="2rem" fontSize={"2.5rem"}>
-            Wait for loading data...
-          </Text>
-        )}
+      )
+    } else {
+      return (
+        <Center h="70%">
+          <Spinner color='gray.500' mr={4} size={'lg'}/>
+          <Text>Loading data...</Text>
+        </Center>
+      )
+    }
+  }
+
+  return (
+    <Center className="App" flexDir={"column"}>
+      <Text mb="2rem" as="h2" fontSize="2rem">
+        The Order book: {dataStore.currentContract}
+      </Text>
+      <Box sx={appStyle.root} id="order-book">
+        <GroupSelect
+          onSelectGroup={_onSelectGroup}
+          groupLevel={dataStore.groupLevel}
+          contract={dataStore.currentContract}
+        />
+        <Divider mt="1rem" />
+        {_renderOrderBookTable()}
       </Box>
+      <Flex mt="1.5rem">
+        <Button
+          mr="1rem"
+          onClick={() => dataStore.switchContract()}
+          bgColor="purple.500"
+          leftIcon={<SwitchIcon boxSize={"1.5rem"} fill={"gray.100"} />}
+        >
+          Toggle feed
+        </Button>
+
+        <Button
+          bgColor="red.500"
+          onClick={() => dataStore.throwError()}
+          leftIcon={<WarningIcon boxSize={"1.5rem"} fill={"gray.100"} />}
+        >
+          Kill feed
+        </Button>
+      </Flex>
     </Center>
   );
 }
