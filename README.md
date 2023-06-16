@@ -5,5 +5,4 @@ How to run:
 `yarn start`
 
 ## Demo video
-
-[![Watch the video](vid.mp4)]
+https://youtu.be/m82ri-3t2Aw
