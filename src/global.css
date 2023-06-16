@@ -1,0 +1,20 @@
+/* width */
+#order-book::-webkit-scrollbar {
+  width: 7px;
+}
+
+/* Track */
+#order-book::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0);
+}
+
+/* Handle */
+#order-book::-webkit-scrollbar-thumb {
+  border-radius: 400px;
+  background: rgba(99, 115, 129, 0.5);
+}
+
+/* Handle on hover */
+#order-book::-webkit-scrollbar-thumb:hover {
+  background: rgba(99, 115, 129, 0.9);
+}

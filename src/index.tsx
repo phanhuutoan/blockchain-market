@@ -4,7 +4,7 @@ import App from './App';
 import reportWebVitals from './reportWebVitals';
 import { ChakraProvider } from '@chakra-ui/react';
 import { theme } from './themes/theme';
-import { datafeedService } from './services';
+import { InjectContext, datafeedService } from './services';
 
 datafeedService.initDatafeed()
 
@@ -13,9 +13,11 @@ const root = ReactDOM.createRoot(
 );
 root.render(
   <React.StrictMode>
-    <ChakraProvider theme={theme}>
-      <App />
-    </ChakraProvider>
+    <InjectContext>
+      <ChakraProvider theme={theme}>
+        <App />
+      </ChakraProvider>
+    </InjectContext>
   </React.StrictMode>
 );
 

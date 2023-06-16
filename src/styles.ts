@@ -7,6 +7,8 @@ export const appStyle = defineStyle({
     bgColor: 'gray.800',
     borderRadius: '.4rem',
     p: '1.4rem',
+    maxH: '35rem',
+    overflowY: 'auto',
     boxShadow: 'xl',
 
     '& p': {

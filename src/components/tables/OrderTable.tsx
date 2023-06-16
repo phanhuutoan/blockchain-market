@@ -11,13 +11,14 @@ import { uniqueId } from "lodash";
 
 interface OrderTableProps {
   listHeading: string[];
-  listRows: Array<string[]>;
+  listRows: Array<number[]>;
   textAlign?: "left" | "right";
   tableType?: "sell" | "buy";
 }
 
 const OrderTable = (props: OrderTableProps) => {
   const { listHeading, listRows, textAlign = "left", tableType } = props;
+  const formater = new Intl.NumberFormat()
 
   function _colorCompute(index: number) {
     const priceColor = tableType === "sell" ? "red.500" : "green.500";
@@ -38,8 +39,10 @@ const OrderTable = (props: OrderTableProps) => {
               key={`row-${rowIndex}-${uniqueId()}`}
               textAlign={textAlign}
               color={_colorCompute(index)}
+              py="6.5px"
+              fontSize={'14px'}
             >
-              {cell}
+              {formater.format(cell)}
             </Td>
           ))}
         </Tr>
