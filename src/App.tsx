@@ -30,7 +30,7 @@ function App() {
     dataStore.changeGroupLevel(groupLevel);
   }
 
-  dataStore.registerSockerErrHanlder((err) => {
+  dataStore.registerSocketErrHanlder((err) => {
     toast({
       title: 'An error cause.',
       description: "Please re-check your websocket",
@@ -46,13 +46,15 @@ function App() {
     if(dataStore.orderBuyTableData.length > 0 && !renderCheck) {
       setIsLoading(false)
       renderCheck = true;
+    } else if (dataStore.orderBuyTableData.length === 0) {
+      setIsLoading(true)
     }
   }, [dataStore.orderBuyTableData])
 
   function _renderOrderBookTable() {
     if (!isLoading) {
       return (
-        <Flex>
+        <Flex role="ORDER_TABLE">
             <Box w="100%">
               <OrderTable
                 listHeading={headingBuy}
@@ -75,7 +77,7 @@ function App() {
       return (
         <Center h="70%">
           <Spinner color='gray.500' mr={4} size={'lg'}/>
-          <Text>Loading data...</Text>
+          <Text data-testid="LOADING_TEXT">Loading data...</Text>
         </Center>
       )
     }

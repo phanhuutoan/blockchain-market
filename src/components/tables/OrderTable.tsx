@@ -45,6 +45,7 @@ const OrderTable = (props: OrderTableProps) => {
               color={_colorCompute(index)}
               py="6.5px"
               fontSize={'16px'}
+              data-testid="DATA_NUMBER"
             >
               {formater.format(cell)}
             </Td>
@@ -56,7 +57,7 @@ const OrderTable = (props: OrderTableProps) => {
 
   return (
     <TableContainer>
-      <Table variant="simple">
+      <Table variant="unstyled">
         <Thead>
           <Tr>
             {listHeading.map((heading) => (

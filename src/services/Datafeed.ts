@@ -47,8 +47,8 @@ export class Datafeed {
       };
     };
 
-    // update data every 0.8s
-    this.interval = setInterval(this.triggerSubscribers.bind(this), 800);
+    // update data every 0.5s
+    this.interval = setInterval(this.triggerSubscribers.bind(this), 500);
   }
 
   subscribe(subscriber: DatafeedSubscriber) {
