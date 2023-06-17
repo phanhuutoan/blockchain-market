@@ -45,8 +45,9 @@ export class DataStore {
   }
 
   switchContract() {
-    this.orderBuyTableData = []
-    this.orderSellTableData = []
+    console.log('SW');
+    this.orderBuyTableData = [];
+    this.orderSellTableData = [];
     this.unsubDatadeed();
     this.groupLevel =
       this.currentContract === ContractTypeEnum.BTUSD
@@ -55,6 +56,7 @@ export class DataStore {
     this.datafeedService.switchContract();
     this.currentContract = this.datafeedService.currentContract;
     this.subscribeId = this.subscribeDatafeed();
+    console.log('SW DONE');
   }
 
   changeGroupLevel(groupLevel: GroupLevel) {
@@ -170,9 +172,8 @@ export class DataStore {
     let buyData = dataset.bids;
     let sellData = dataset.asks;
 
-    if (tableType === 'buy') {
+    if (tableType === "buy") {
       this.temporaryBuyData = new Map(buyData);
-
     } else {
       this.temporarySellData = new Map(sellData);
     }

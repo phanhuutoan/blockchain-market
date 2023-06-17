@@ -85,6 +85,7 @@ export class Datafeed {
 
   switchContract() {
     // ubsub current contract
+    this.clearList()
     this.socketSendData(this.SOCKET_PLAYLOAD(this.currentContract, false));
 
     if (this.currentContract === ContractTypeEnum.BTUSD) {
